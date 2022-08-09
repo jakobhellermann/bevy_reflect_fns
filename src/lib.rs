@@ -15,6 +15,7 @@ pub enum ReflectFunctionError {
     ArgCountMismatch { expected: usize, got: usize },
 }
 
+#[derive(Debug)]
 pub enum ReflectArg<'a> {
     Ref(&'a dyn Reflect),
     RefMut(&'a mut dyn Reflect),
