@@ -1,0 +1,12 @@
+[package]
+name = "bevy_reflect_fns"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+bevy_reflect = "0.8"
+
+[dev-dependencies]
+bevy_reflect = { version = "0.8", features = ["glam"] }
+glam = "0.21"
