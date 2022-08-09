@@ -17,7 +17,15 @@ pub enum ReflectArg<'a> {
     Owned(&'a dyn Reflect),
 }
 
-impl<'a> ReflectArg<'a> {
+impl ReflectArg<'_> {
+    pub fn pass<T: Reflect>(pass_mode: PassMode, value: &mut T) -> ReflectArg<'_> {
+        match pass_mode {
+            PassMode::Ref => ReflectArg::Ref(value),
+            PassMode::RefMut => ReflectArg::RefMut(value),
+            PassMode::Owned => ReflectArg::Owned(value),
+        }
+    }
+
     fn pass_mode(&self) -> PassMode {
         match self {
             ReflectArg::Ref(_) => PassMode::Ref,
@@ -85,7 +93,7 @@ impl<'a> ReflectArg<'a> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum PassMode {
     Ref,
     RefMut,
