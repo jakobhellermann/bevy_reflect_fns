@@ -15,7 +15,7 @@ macro_rules! reflect_function {
             pass_modes: {
                 vec![$($crate::reflect_function_macro::CheckPassMode::<$param_ty>::PASS_MODE),*]
             },
-            f: Box::new(|args| {
+            f: |args| {
                 let expected_arg_count = $crate::reflect_function!(@count $($param_ty,)*);
                 if args.len() != expected_arg_count {
                     return Err($crate::ReflectFunctionError::ArgCountMismatch { expected: expected_arg_count, got: args.len() });
@@ -31,7 +31,7 @@ macro_rules! reflect_function {
                 );
 
                 Ok(Box::new(ret))
-            }),
+            },
         }
     }};
 

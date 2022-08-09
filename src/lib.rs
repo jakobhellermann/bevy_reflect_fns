@@ -85,7 +85,7 @@ impl<'a> ReflectArg<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum PassMode {
     Ref,
     RefMut,
@@ -93,12 +93,13 @@ pub enum PassMode {
 }
 
 type RawReflectFunction =
-    dyn Fn(&mut [&mut ReflectArg<'_>]) -> Result<Box<dyn Reflect>, ReflectFunctionError>;
+    fn(&mut [&mut ReflectArg<'_>]) -> Result<Box<dyn Reflect>, ReflectFunctionError>;
 
+#[derive(Clone)]
 pub struct ReflectFunction {
     pub fn_name: &'static str,
     pub pass_modes: Vec<PassMode>,
-    pub f: Box<RawReflectFunction>,
+    pub f: RawReflectFunction,
 }
 
 impl std::fmt::Debug for ReflectFunction {
@@ -110,7 +111,7 @@ impl std::fmt::Debug for ReflectFunction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ReflectMethods {
     methods: HashMap<&'static str, ReflectFunction>,
 }

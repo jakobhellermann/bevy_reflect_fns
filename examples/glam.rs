@@ -18,7 +18,7 @@ fn manual() -> ReflectFunction {
     ReflectFunction {
         fn_name: bevy_reflect_fns::reflect_function_macro::type_name_of_val(&Vec3::lerp),
         pass_modes: vec![PassMode::Owned],
-        f: Box::new(|args| {
+        f: |args| {
             let [a, b, c]: &mut [_; 3] = args.try_into().unwrap();
             let a = a.from_reflect()?;
             let b = b.from_reflect()?;
@@ -26,6 +26,6 @@ fn manual() -> ReflectFunction {
             let ret = Vec3::lerp(a, b, c);
 
             Ok(Box::new(ret))
-        }),
+        },
     }
 }
