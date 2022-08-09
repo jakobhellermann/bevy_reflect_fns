@@ -3,7 +3,7 @@ use std::any::TypeId;
 use bevy_reflect_fns::{reflect_function, PassMode, ReflectArg, ReflectFunction, ReflectMethods};
 use glam::Vec3;
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let methods = ReflectMethods::from_methods([
         ("normalize", reflect_function!(Vec3::normalize: (Vec3))),
         ("lerp", reflect_function!(Vec3::lerp: (Vec3, Vec3, f32))),
@@ -13,13 +13,16 @@ fn main() {
         ),
     ]);
 
-    let normalized = (methods.get("normalize").unwrap().f)(&mut [&mut ReflectArg::Owned(
-        &Vec3::new(2.0, 0.0, 0.0),
-    )])
-    .unwrap();
+    let original = Vec3::new(2.0, 0.0, 0.0);
+    let normalized = methods
+        .get("normalize")
+        .unwrap()
+        .call(&mut [&mut ReflectArg::Owned(&original)])?;
 
     let normalized: Vec3 = *normalized.downcast().unwrap();
-    assert_eq!(normalized, Vec3::X);
+    println!("{original:?}.normalize() == {normalized:?}");
+
+    Ok(())
 }
 
 #[allow(dead_code)]

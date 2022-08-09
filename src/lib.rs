@@ -111,6 +111,15 @@ pub struct ReflectFunction {
     pub f: RawReflectFunction,
 }
 
+impl ReflectFunction {
+    pub fn call(
+        &self,
+        args: &mut [&mut ReflectArg<'_>],
+    ) -> Result<Box<dyn Reflect>, ReflectFunctionError> {
+        (self.f)(args)
+    }
+}
+
 impl std::fmt::Debug for ReflectFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ReflectFunction")
@@ -136,6 +145,10 @@ impl ReflectMethods {
 
     pub fn insert(&mut self, method: &'static str, function: ReflectFunction) {
         self.methods.insert(method, function);
+    }
+
+    pub fn methods(&self) -> impl Iterator<Item = &'static str> + '_ {
+        self.methods.keys().copied()
     }
 
     pub fn get(&self, method: &str) -> Option<&ReflectFunction> {
