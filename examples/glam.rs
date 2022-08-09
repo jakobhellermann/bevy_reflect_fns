@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let normalized = methods
         .get("normalize")
         .unwrap()
-        .call(&mut [&mut ReflectArg::Owned(&original)])?;
+        .call(&mut [ReflectArg::Owned(&original)])?;
 
     let normalized: Vec3 = *normalized.downcast().unwrap();
     println!("{original:?}.normalize() == {normalized:?}");

@@ -102,7 +102,7 @@ pub enum PassMode {
 }
 
 type RawReflectFunction =
-    fn(&mut [&mut ReflectArg<'_>]) -> Result<Box<dyn Reflect>, ReflectFunctionError>;
+    fn(&mut [ReflectArg<'_>]) -> Result<Box<dyn Reflect>, ReflectFunctionError>;
 
 #[derive(Clone)]
 pub struct ReflectFunction {
@@ -114,7 +114,7 @@ pub struct ReflectFunction {
 impl ReflectFunction {
     pub fn call(
         &self,
-        args: &mut [&mut ReflectArg<'_>],
+        args: &mut [ReflectArg<'_>],
     ) -> Result<Box<dyn Reflect>, ReflectFunctionError> {
         (self.f)(args)
     }
