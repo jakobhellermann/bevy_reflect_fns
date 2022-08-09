@@ -1,6 +1,6 @@
 use std::any::TypeId;
 
-use bevy_reflect_fns::{reflect_function, PassMode, ReflectFunction, ReflectMethods};
+use bevy_reflect_fns::{reflect_function, PassMode, ReflectArg, ReflectFunction, ReflectMethods};
 use glam::Vec3;
 
 fn main() {
@@ -12,7 +12,14 @@ fn main() {
             reflect_function!(Vec3::any_orthonormal_pair: (&Vec3)),
         ),
     ]);
-    println!("{methods:#?}");
+
+    let normalized = (methods.get("normalize").unwrap().f)(&mut [&mut ReflectArg::Owned(
+        &Vec3::new(2.0, 0.0, 0.0),
+    )])
+    .unwrap();
+
+    let normalized: Vec3 = *normalized.downcast().unwrap();
+    assert_eq!(normalized, Vec3::X);
 }
 
 #[allow(dead_code)]

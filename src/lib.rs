@@ -86,14 +86,11 @@ impl ReflectArg<'_> {
                 })
             }
         };
-        if !value.is::<T>() {
-            return Err(ReflectFunctionError::ArgTypeMismatch {
-                expected: std::any::type_name::<T>(),
-                got: value.type_name().to_owned(),
-            });
-        }
 
-        Ok(T::from_reflect(value).unwrap())
+        T::from_reflect(value).ok_or_else(|| ReflectFunctionError::ArgTypeMismatch {
+            expected: std::any::type_name::<T>(),
+            got: value.type_name().to_owned(),
+        })
     }
 }
 
