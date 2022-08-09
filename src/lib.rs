@@ -5,9 +5,13 @@ use std::{any::TypeId, collections::HashMap};
 
 use bevy_reflect::{FromReflect, Reflect};
 
+#[derive(thiserror::Error, Debug)]
 pub enum ReflectFunctionError {
+    #[error("Expected arg pass mode of {expected:?} but got {got:?}.")]
     ExpectedArgPassMode { expected: PassMode, got: PassMode },
+    #[error("Expected arg of type {expected} but got {got}.")]
     ArgTypeMismatch { expected: &'static str, got: String },
+    #[error("Expected arg count of {expected} but got {got}.")]
     ArgCountMismatch { expected: usize, got: usize },
 }
 
