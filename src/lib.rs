@@ -1,7 +1,7 @@
 #[doc(hidden)] // implementation detail
 pub mod reflect_function_macro;
 
-use std::collections::HashMap;
+use std::{any::TypeId, collections::HashMap};
 
 use bevy_reflect::{FromReflect, Reflect};
 
@@ -98,7 +98,7 @@ type RawReflectFunction =
 #[derive(Clone)]
 pub struct ReflectFunction {
     pub fn_name: &'static str,
-    pub pass_modes: Vec<PassMode>,
+    pub signature: Vec<(PassMode, TypeId)>,
     pub f: RawReflectFunction,
 }
 
@@ -106,7 +106,7 @@ impl std::fmt::Debug for ReflectFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ReflectFunction")
             .field("f", &self.fn_name)
-            .field("pass_modes", &self.pass_modes)
+            .field("pass_modes", &self.signature)
             .finish()
     }
 }

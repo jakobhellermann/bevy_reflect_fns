@@ -12,8 +12,8 @@ macro_rules! reflect_function {
         use $crate::reflect_function_macro::SpecializationBaseCase;
         $crate::ReflectFunction {
             fn_name: $crate::reflect_function_macro::type_name_of_val(&$fn),
-            pass_modes: {
-                vec![$($crate::reflect_function_macro::CheckPassMode::<$param_ty>::PASS_MODE),*]
+            signature: {
+                vec![$(($crate::reflect_function_macro::CheckPassMode::<$param_ty>::PASS_MODE, std::any::TypeId::of::<$param_ty>())),*]
             },
             f: |args| {
                 let expected_arg_count = $crate::reflect_function!(@count $($param_ty,)*);

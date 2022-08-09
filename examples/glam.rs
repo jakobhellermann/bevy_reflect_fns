@@ -1,3 +1,5 @@
+use std::any::TypeId;
+
 use bevy_reflect_fns::{reflect_function, PassMode, ReflectFunction, ReflectMethods};
 use glam::Vec3;
 
@@ -17,7 +19,11 @@ fn main() {
 fn manual() -> ReflectFunction {
     ReflectFunction {
         fn_name: bevy_reflect_fns::reflect_function_macro::type_name_of_val(&Vec3::lerp),
-        pass_modes: vec![PassMode::Owned],
+        signature: vec![
+            (PassMode::Owned, TypeId::of::<Vec3>()),
+            (PassMode::Owned, TypeId::of::<Vec3>()),
+            (PassMode::Owned, TypeId::of::<f32>()),
+        ],
         f: |args| {
             let [a, b, c]: &mut [_; 3] = args.try_into().unwrap();
             let a = a.from_reflect()?;
