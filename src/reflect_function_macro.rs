@@ -21,13 +21,10 @@ macro_rules! reflect_function {
                     return Err($crate::ReflectFunctionError::ArgCountMismatch { expected: expected_arg_count, got: args.len() });
                 }
 
-                let mut i = 0;
+                let mut args_iter = args.iter_mut();
+
                 let ret = $fn(
-                    $({
-                        let arg = ($crate::reflect_function_macro::CheckPassMode::<$param_ty>::EXTRACT_FN)(&mut args[i])?.0;
-                        i += 1;
-                        arg
-                    }),*
+                    $(($crate::reflect_function_macro::CheckPassMode::<$param_ty>::EXTRACT_FN)(args_iter.next().unwrap())?.0),*
                 );
 
                 Ok(Box::new(ret))
