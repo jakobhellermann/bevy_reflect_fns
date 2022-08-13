@@ -8,7 +8,7 @@ pub fn type_name_of_val<T>(_: &T) -> &'static str {
 
 #[macro_export]
 macro_rules! reflect_function {
-    ($fn:path: ($($param_ty:ty),*)) => {{
+    ($fn:expr, ($($param_ty:ty),*)) => {{
         use $crate::reflect_function_macro::SpecializationBaseCase;
         $crate::ReflectFunction {
             fn_name: $crate::reflect_function_macro::type_name_of_val(&$fn),
