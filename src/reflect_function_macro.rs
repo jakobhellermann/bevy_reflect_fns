@@ -1,122 +1,54 @@
-use bevy_reflect::{FromReflect, Reflect};
-
-use crate::{PassMode, ReflectArg, ReflectFunctionError};
-
 pub fn type_name_of_val<T>(_: &T) -> &'static str {
     std::any::type_name::<T>()
 }
 
 #[macro_export]
 macro_rules! reflect_function {
-    ($fn:expr, ($($param_ty:ty),*)) => {{
-        use $crate::reflect_function_macro::SpecializationBaseCase;
+    ($fn:expr, ( $($args:tt)*) ) => {
         $crate::ReflectFunction {
             fn_name: $crate::reflect_function_macro::type_name_of_val(&$fn),
-            signature: {
-                vec![$(($crate::reflect_function_macro::CheckPassMode::<$param_ty>::PASS_MODE, std::any::TypeId::of::<$param_ty>())),*]
-            },
+            signature: $crate::reflect_function!(@arg signature () [] $($args)* ,),
             f: |args| {
-                let expected_arg_count = $crate::reflect_function!(@count $($param_ty,)*);
+                let expected_arg_count = $crate::reflect_function!(@arg count () [] $($args)* ,);
                 if args.len() != expected_arg_count {
                     return Err($crate::ReflectFunctionError::ArgCountMismatch { expected: expected_arg_count, got: args.len() });
                 }
 
                 let mut args_iter = args.iter_mut();
-
-                let ret = $fn(
-                    $(($crate::reflect_function_macro::CheckPassMode::<$param_ty>::EXTRACT_FN)(args_iter.next().unwrap())?.0),*
-                );
-
+                let ret = $crate::reflect_function!(@arg call ($fn, args_iter) [] $($args)* ,);
                 Ok(Box::new(ret))
             },
-        }
-    }};
-
-    (@count ) => {0usize};
-    (@count $head:ty, $($tail:ty,)*) => {1usize + $crate::reflect_function!(@count $($tail,)*)};
-}
-
-// helper for fake specialization
-pub trait SpecializationBaseCase<T> {
-    const PASS_MODE: PassMode;
-    const EXTRACT_FN: fn(&mut ReflectArg<'_>) -> Result<T, ReflectFunctionError>;
-}
-impl<T: FromReflect> SpecializationBaseCase<T> for T {
-    const PASS_MODE: PassMode = PassMode::Owned;
-    const EXTRACT_FN: fn(&mut ReflectArg<'_>) -> Result<T, ReflectFunctionError> =
-        |r| r.from_reflect();
-}
-
-pub struct CheckPassMode<T>(pub T);
-impl<T: Reflect> CheckPassMode<&T> {
-    pub const PASS_MODE: PassMode = PassMode::Ref;
-    pub const EXTRACT_FN: for<'a> fn(
-        &'a mut ReflectArg<'_>,
-    ) -> Result<CheckPassMode<&'a T>, ReflectFunctionError> =
-        |r| r.downcast_ref().map(CheckPassMode);
-}
-impl<T: Reflect> CheckPassMode<&mut T> {
-    pub const PASS_MODE: PassMode = PassMode::RefMut;
-    pub const EXTRACT_FN: for<'a> fn(
-        &'a mut ReflectArg<'_>,
-    )
-        -> Result<CheckPassMode<&'a mut T>, ReflectFunctionError> =
-        |r| r.downcast_mut().map(CheckPassMode);
-}
-
-impl<T: FromReflect> FromReflect for CheckPassMode<T> {
-    fn from_reflect(reflect: &dyn Reflect) -> Option<Self> {
-        T::from_reflect(reflect).map(CheckPassMode)
     }
-}
+    };
 
-// just necessary for the `CheckIsRef: FromReflect` type
-impl<T: Reflect> Reflect for CheckPassMode<T> {
-    fn type_name(&self) -> &str {
-        self.0.type_name()
-    }
+    (@signature o $ty:ty) => { ($crate::PassMode::Owned, core::any::TypeId::of::<$ty>()) };
+    (@signature r $ty:ty) => { ($crate::PassMode::Ref, core::any::TypeId::of::<$ty>()) };
+    (@signature m $ty:ty) => { ($crate::PassMode::RefMut, core::any::TypeId::of::<$ty>()) };
+    (@signature () [$(($kind:ident $ty:ty),)*]) => { vec![$($crate::reflect_function!(@signature $kind $ty),)*] };
 
-    fn get_type_info(&self) -> &'static bevy_reflect::TypeInfo {
-        self.0.get_type_info()
-    }
+    (@count () [$(($kind:ident $ty:ty),)*]) => { 0 $(+ $crate::reflect_function!(@count $kind ))* };
+    (@count $ignore:ident) => { 1 };
 
-    fn into_any(self: Box<Self>) -> Box<dyn std::any::Any> {
-        Box::new(self.0)
-    }
 
-    fn as_any(&self) -> &dyn std::any::Any {
-        self.0.as_any()
-    }
+    (@call ($fn:expr, $args_iter:ident) [$(($kind:ident $ty:ty),)*]) => {
+        $fn($($crate::reflect_function!(@call $kind $ty, $args_iter.next().unwrap() )),*)
+    };
+    (@call r $ty:ty, $arg:expr) => { $arg.downcast_ref::<$ty>()? };
+    (@call m $ty:ty, $arg:expr) => { $arg.downcast_mut::<$ty>()? };
+    (@call o $ty:ty, $arg:expr) => { $arg.from_reflect::<$ty>()? };
 
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self.0.as_any_mut()
-    }
 
-    fn as_reflect(&self) -> &dyn Reflect {
-        self.0.as_reflect()
-    }
+    (@arg $cb:ident ($($cx:tt)*) [$(($kind:ident $ty:ty),)*] $(,)?) => {
+        $crate::reflect_function!(@$cb ($($cx)*) [$(($kind $ty),)*])
+    };
 
-    fn as_reflect_mut(&mut self) -> &mut dyn Reflect {
-        self.0.as_reflect_mut()
-    }
-
-    fn apply(&mut self, value: &dyn Reflect) {
-        self.0.apply(value)
-    }
-
-    fn set(&mut self, value: Box<dyn Reflect>) -> Result<(), Box<dyn Reflect>> {
-        self.0.set(value)
-    }
-
-    fn reflect_ref(&self) -> bevy_reflect::ReflectRef {
-        self.0.reflect_ref()
-    }
-
-    fn reflect_mut(&mut self) -> bevy_reflect::ReflectMut {
-        self.0.reflect_mut()
-    }
-
-    fn clone_value(&self) -> Box<dyn Reflect> {
-        self.0.clone_value()
-    }
+    (@arg $cb:ident ($($cx:tt)*) [$(($kind:ident $ty:ty),)*] &$newty:ty, $($args:tt)* ) => {
+        $crate::reflect_function!(@arg $cb ($($cx)*) [$(($kind $ty),)* (r $newty),] $($args)*)
+    };
+    (@arg $cb:ident ($($cx:tt)*) [$(($kind:ident $ty:ty),)*] &mut $newty:ty, $($args:tt)* ) => {
+        $crate::reflect_function!(@arg $cb ($($cx)*) [$(($kind $ty),)* (m $newty),] $($args)*)
+    };
+    (@arg $cb:ident ($($cx:tt)*) [$(($kind:ident $ty:ty),)*] $newty:ty, $($args:tt)* ) => {
+        $crate::reflect_function!(@arg $cb ($($cx)*) [$(($kind $ty),)* (o $newty ),] $($args)*)
+    };
 }
