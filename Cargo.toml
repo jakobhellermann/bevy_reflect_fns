@@ -5,9 +5,12 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-bevy_reflect = "0.8"
+bevy_reflect = "0.9.0-dev"
 thiserror = "1.0.32"
 
 [dev-dependencies]
-bevy_reflect = { version = "0.8", features = ["glam"] }
+bevy_reflect = { version = "0.9.0-dev", features = ["glam"] }
 glam = "0.21"
+
+[patch.crates-io]
+bevy_reflect = { path = "../bevy/crates/bevy_reflect"}
