@@ -19,11 +19,12 @@ pub enum ReflectArg<'a> {
 }
 
 type RawReflectFunction =
-    fn(&mut [&mut ReflectArg<'_>]) -> Result<Box<dyn Reflect>, ReflectFunctionError>;
+    fn(&mut [ReflectArg<'_>]) -> Result<Box<dyn Reflect>, ReflectFunctionError>;
 
+#[derive(Clone)]
 pub struct ReflectFunction {
     pub fn_name: &'static str,
-    pub pass_modes: Vec<PassMode>,
+    pub signature: Vec<(PassMode, TypeId)>,
     pub f: RawReflectFunction,
 }
 
