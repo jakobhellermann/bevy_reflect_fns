@@ -5,9 +5,9 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-bevy_reflect = "0.8"
-thiserror = "1.0.32"
+bevy_reflect = "0.9"
+thiserror = "1.0"
 
 [dev-dependencies]
-bevy_reflect = { version = "0.8", features = ["glam"] }
-glam = "0.21"
+bevy_reflect = { version = "0.9", features = ["glam"] }
+glam = "0.22"
