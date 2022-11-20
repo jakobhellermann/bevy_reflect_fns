@@ -6,15 +6,21 @@ use glam::Vec3;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let methods = ReflectMethods::from_methods([
-        ("normalize", reflect_function!(Vec3::normalize, (Vec3))),
-        ("lerp", reflect_function!(Vec3::lerp, (Vec3, Vec3, f32))),
+        (
+            "normalize",
+            reflect_function!(Vec3::normalize, (Vec3) -> Vec3),
+        ),
         (
             "lerp",
-            reflect_function!(Vec3::any_orthonormal_pair, (&Vec3)),
+            reflect_function!(Vec3::lerp, (Vec3, Vec3, f32) -> Vec3),
+        ),
+        (
+            "lerp",
+            reflect_function!(Vec3::any_orthonormal_pair, (&Vec3) -> (Vec3, Vec3)),
         ),
         (
             "div_assign",
-            reflect_function!(<Vec3 as DivAssign<f32>>::div_assign, (&mut Vec3, f32)),
+            reflect_function!(<Vec3 as DivAssign<f32>>::div_assign, (&mut Vec3, f32) -> ()),
         ),
     ]);
 

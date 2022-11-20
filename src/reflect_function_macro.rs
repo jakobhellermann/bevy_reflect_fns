@@ -4,7 +4,7 @@ pub fn type_name_of_val<T>(_: &T) -> &'static str {
 
 #[macro_export]
 macro_rules! reflect_function {
-    ($fn:expr, ( $($args:tt)*) ) => {
+    ($fn:expr, ( $($args:tt)* ) -> $ret_ty:ty) => {
         $crate::ReflectFunction {
             fn_name: $crate::reflect_function_macro::type_name_of_val(&$fn),
             signature: $crate::reflect_function!(@arg signature () [] $($args)* ,),
@@ -15,7 +15,7 @@ macro_rules! reflect_function {
                 }
 
                 let mut args_iter = args.iter_mut();
-                let ret = $crate::reflect_function!(@arg call ($fn, args_iter) [] $($args)* ,);
+                let ret: $ret_ty = $crate::reflect_function!(@arg call ($fn, args_iter) [] $($args)* ,);
                 Ok(Box::new(ret))
             },
     }
